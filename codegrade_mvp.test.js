@@ -46,6 +46,7 @@ describe('server.js', () => {
     }, 750)
     test('[5] responds with the correct error message if id does not exist', async () => {
       let res = await request(server).get('/api/users/111')
+      console.log(res)
       expect(res.body.message).toMatch(/not found/i)
     }, 750)
   })
