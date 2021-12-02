@@ -36,7 +36,6 @@ router.post('/', validateUser, (req, res) => {
   console.log(req.body.name) 
   Users.insert(req.body)
     .then(userId => {
-      console.log(userId)
       return Users.getById(userId.id)
     })
     .then(userObj => {
@@ -45,26 +44,48 @@ router.post('/', validateUser, (req, res) => {
   
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', validateUserId , validateUser, (req, res) => {
   // RETURN THE FRESHLY UPDATED USER OBJECT
   // this needs a middleware to verify user id
   // and another middleware to check that the request body is valid
+  Users.update(req.params.id, req.body)
+    .then(updatedUser => {
+      res.status(201).json(updatedUser)
+    })
+
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', validateUserId, async (req, res) => {
   // RETURN THE FRESHLY DELETED USER OBJECT
   // this needs a middleware to verify user id
+  const identity = req.params.id
+  const {id, name} = await Users.getById(identity); 
+  Users.remove(identity)
+    .then(xxx =>{
+      console.log({id, name})
+      res.status(204).json({...id, name:name})  //can someone explain this to me?? i need it lol..
+    })
+
 });
 
-router.get('/:id/posts', (req, res) => {
+router.get('/:id/posts', validateUserId,(req, res) => {
   // RETURN THE ARRAY OF USER POSTS
   // this needs a middleware to verify user id
+  Users.getUserPosts(req.params.id)
+    .then( posts =>{
+      console.log(posts)
+      res.status(200).json(posts)
+    })
 });
 
-router.post('/:id/posts', (req, res) => {
+router.post('/:id/posts',validatePost, validateUserId, (req, res) => {
   // RETURN THE NEWLY CREATED USER POST
   // this needs a middleware to verify user id
   // and another middleware to check that the request body is valid
+  Posts.insert({text: req.body.text, user_id: req.params.id})
+    .then(post => {
+      res.status(200).json(post)
+    })
 });
 
 // do not forget to export the router
